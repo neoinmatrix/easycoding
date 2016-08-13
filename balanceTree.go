@@ -252,10 +252,11 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 		if node.Left != nil && node.Right == nil {
 			node.Value = node.Left.Value
 			node.Right = node.Left.Right
-			node, smaller = t.DeleteNode(node.Left, tmp.Value)
+			node, smaller = t.DeleteNode(node.Left, node.Right.Value)
 		} else if node.Right != nil && node.Left == nil {
 			node.Value = node.Right.Value
 			node.Left = node.Right.Left
+			node, smaller = t.DeleteNode(node.Right, node.Right.Value)
 		} else if node.Left != nil && node.Right != nil {
 			var tmp *Node
 			if node.Balance == TB_LEFT {
