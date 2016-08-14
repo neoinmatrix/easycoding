@@ -252,11 +252,17 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 		if node.Left != nil && node.Right == nil {
 			node.Value = node.Left.Value
 			node.Right = node.Left.Right
-			node, smaller = t.DeleteNode(node.Left, node.Right.Value)
+			node.Left, smaller = t.DeleteNode(node.Left, node.Left.Value)
+			if smaller {
+				node.Balance = TB_LRE
+			}
 		} else if node.Right != nil && node.Left == nil {
 			node.Value = node.Right.Value
 			node.Left = node.Right.Left
-			node, smaller = t.DeleteNode(node.Right, node.Right.Value)
+			node.Right, smaller = t.DeleteNode(node.Right, node.Right.Value)
+			if smaller {
+				node.Balance = TB_LRE
+			}
 		} else if node.Left != nil && node.Right != nil {
 			var tmp *Node
 			if node.Balance == TB_LEFT {
@@ -264,14 +270,32 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 				for tmp.Right != nil {
 					tmp = tmp.Right
 				}
+				node.Value = tmp.Value
+				node.Left, smaller = t.DeleteNode(node.Left, tmp.Value)
+				if smaller {
+					node.Balance = TB_LRE
+				}
+			} else if node.Balance == TB_RIGHT {
+				tmp = node.Right
+				for tmp.Left != nil {
+					tmp = tmp.Left
+				}
+				node.Value = tmp.Value
+				node.Right, smaller = t.DeleteNode(node.Right, tmp.Value)
+				if smaller {
+					node.Balance = TB_LRE
+				}
 			} else {
 				tmp = node.Right
 				for tmp.Left != nil {
 					tmp = tmp.Left
 				}
+				node.Value = tmp.Value
+				node.Right, smaller = t.DeleteNode(node.Right, tmp.Value)
+				if smaller {
+					node.Balance = TB_LEFT
+				}
 			}
-			node.Value = tmp.Value
-			node, smaller = t.DeleteNode(node.Left, tmp.Value)
 			return node, smaller
 		} else {
 			return nil, true
@@ -281,9 +305,9 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 	if smaller == true && towards == TB_LEFT {
 		if node.Balance == TB_LEFT {
 			node.Balance = TB_LRE
-			smaller = false
+			smaller = true
 		} else if node.Balance == TB_RIGHT {
-			node, smaller = t.BalanceTree(node, TB_LEFT)
+			node, smaller = t.BalanceTree(node, TB_RIGHT)
 		} else {
 			node.Balance = TB_RIGHT
 			smaller = false
@@ -293,9 +317,9 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 	if smaller == true && towards == TB_RIGHT {
 		if node.Balance == TB_RIGHT {
 			node.Balance = TB_LRE
-			smaller = false
+			smaller = true
 		} else if node.Balance == TB_LEFT {
-			node, smaller = t.BalanceTree(node, TB_RIGHT)
+			node, smaller = t.BalanceTree(node, TB_LEFT)
 		} else {
 			node.Balance = TB_LEFT
 			smaller = false
@@ -308,7 +332,9 @@ func (t *Tree) DeleteNode(node *Node, data int) (*Node, bool) {
 //主程序
 func main() {
 	var treedata = []int{
-		9, 3,
+		//		8, 3, 10, 2, 5, 4,
+		8, 3, 9, 2, 5, 10, 4,
+		//9, 10,
 		//9, 1, 5, 8, 3, 7, 6, 0, 2, 4,
 		//		10, 16, 9, 18, 13, 14,
 		//		10, 16, 9, 18, 13, 11,
@@ -337,7 +363,7 @@ func main() {
 	//	fmt.Println(depth)
 	//广度遍历整棵树
 	mytree.BFS(mytree.Root, print)
-	mytree.Root, _ = mytree.DeleteNode(mytree.Root, 9)
+	mytree.Root, _ = mytree.DeleteNode(mytree.Root, 2)
 	mytree.BFS(mytree.Root, print)
 
 }
@@ -353,7 +379,7 @@ func test() {
 //输出函数
 func print(n *Node) {
 	fmt.Print(n.Value, " ")
-	//fmt.Print("[", n.Balance, "] ")
+	fmt.Print("[", n.Balance, "] ")
 }
 
 //查找查找深度
