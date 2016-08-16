@@ -99,91 +99,105 @@ func (t *Tree) BFS(node *Node, f func(*Node)) {
 
 }
 
-//建平衡二叉树
-func (t *Tree) CreateRBTree(node *Node, data int) (*Node, bool) {
-	if node == nil {
-		tmp := Node{
-			Color:  RED,
-			Left:   nil,
-			Right:  nil,
-			Parent: nil,
-			Value:  data,
-		}
-		if t.Root == nil { // 根节点
-			tmp.Color = BLACK
-		}
-		return &tmp, true
+//建红黑树
+func (t *Tree) CreateRBTree(data int) {
+	var insert *Node = &Node{
+		Color:  RED,
+		Left:   nil,
+		Right:  nil,
+		Parent: nil,
+		Value:  data,
 	}
-	var change bool = false
-	var towards int = T_LEFT
-	if data < node.Value {
-		if node.Left == nil {
-			node.Left, change = t.CreateRBTree(node.Left, data)
-			node.Left.Parent = node
+	if t.Root == nil {
+		insert.Color = BLACK
+		t.Root = insert
+		return
+	}
+	parent := t.Root
+	var ipoint *Node = nil
+	for parent != nil {
+		ipoint = parent
+		if data < ipoint.Value {
+			parent = parent.Left
+		} else if data > ipoint.Value {
+			parent = parent.Right
 		} else {
-			node, change = t.CreateRBTree(node.Left, data)
+			return
 		}
+	}
+	insert.Parent = ipoint
+	var towards int
+	if data < ipoint.Value {
+		ipoint.Left = insert
 		towards = T_LEFT
-	} else if data > node.Value {
-		if node.Left == nil {
-			node.Right, change = t.CreateRBTree(node.Right, data)
-			node.Right.Parent = node
-		} else {
-			node, change = t.CreateRBTree(node.Right, data)
-		}
-
-		towards = T_RIGHT
 	} else {
-		return node, false
+		ipoint.Right = insert
+		towards = T_RIGHT
 	}
 
-	if node.Color == RED && node.Parent == nil { //根节点一定为黑色
-		node.Color = BLACK
-	}
-
-	if change == true && node.Color == RED && node.Parent != nil && node.Parent.Left == node {
-		//新节点 为父节点 右节点
-		if towards == TR_RIGHT {
-			node = t.RotateTree(node, TR_LEFT)
-		}
-		//新节点 为父节点 左节点
-		if node.Parent.Right == nil { // 叔父为黑色
-			node.Parent.Color = RED
-			node.Color = BLACK
-			node.Parent = t.RotateTree(node.Parent, TR_RIGHT)
-		} else { // 叔父为红色
-			node.Color = BLACK
-			node.Parent.Color = RED
-			node.Parent.Right.Color = BLACK
-			if node.Parent == t.Root {
-				node.Parent.Color = BLACK
-			}
-		}
+	if ipoint.Color == BLACK { //父黑 正常完成
+		return
 	}
 
 	//新节点 为父节点 左节点
-	if change == true && node.Color == RED && node.Parent != nil && node.Parent.Right == node {
-		if towards == TR_LEFT {
-			node = t.RotateTree(node, TR_RIGHT)
+	if ipoint.Parent.Left == ipoint {
+		//新节点 为父节点 右节点
+		if towards == T_RIGHT {
+			pnode := ipoint.Parent
+			pnode.Left = t.RotateTree(ipoint, TR_LEFT)
+			ipoint = pnode.Left
 		}
-		if node.Parent.Left == nil { // 叔父为黑色
-			node.Parent.Color = RED
-			node.Color = BLACK
-			node.Parent = t.RotateTree(node.Parent, TR_LEFT)
-		} else { // 叔父为红色
-			node.Color = BLACK
-			node.Parent.Color = RED
-			node.Parent.Left.Color = BLACK
-			if node.Parent == t.Root {
-				node.Parent.Color = BLACK
+		//新节点 为父节点 左节点
+		if ipoint.Parent.Right == nil { // 叔父为黑色
+			ipoint.Parent.Color = RED
+			ipoint.Color = BLACK
+			if ipoint.Parent.Parent != nil {
+				pnode := ipoint.Parent.Parent
+				pnode.Left = t.RotateTree(ipoint.Parent, TR_RIGHT)
+				ipoint = pnode.Left
+			} else {
+				t.Root = t.RotateTree(ipoint.Parent, TR_RIGHT)
+				ipoint = t.Root.Left
 			}
+		} else { // 叔父为红色
+			ipoint.Color = BLACK
+			ipoint.Parent.Color = RED
+			ipoint.Parent.Right.Color = BLACK
+
 		}
 	}
 
-	return node, false
+	//新节点 为父节点 右节点
+	if ipoint.Parent.Right == ipoint {
+		if towards == T_LEFT {
+			pnode := ipoint.Parent
+			pnode.Right = t.RotateTree(ipoint, TR_RIGHT)
+			ipoint = pnode.Right
+		}
+		if ipoint.Parent.Left == nil { // 叔父为黑色
+			ipoint.Parent.Color = RED
+			ipoint.Color = BLACK
+			if ipoint.Parent.Parent != nil {
+				pnode := ipoint.Parent.Parent
+				pnode.Right = t.RotateTree(ipoint.Parent, TR_LEFT)
+				ipoint = pnode.Right
+			} else {
+				t.Root = t.RotateTree(ipoint.Parent, TR_LEFT)
+				ipoint = t.Root.Left
+			}
+		} else { // 叔父为红色
+			ipoint.Color = BLACK
+			ipoint.Parent.Color = RED
+			ipoint.Parent.Left.Color = BLACK
+		}
+	}
+
+	if ipoint.Parent == t.Root && ipoint.Parent.Color == RED {
+		ipoint.Parent.Color = BLACK
+	}
 }
 
-//旋转平衡树
+//旋转红黑树
 func (t *Tree) RotateTree(node *Node, towards int) *Node {
 	if towards == TR_LEFT { //左旋
 		rchild := node.Right
@@ -202,14 +216,24 @@ func (t *Tree) RotateTree(node *Node, towards int) *Node {
 	}
 }
 
+//删除红黑树
+func (t *Tree) DeleteNode(data int) {
+	if data == t.Root.Value {
+
+	}
+
+}
+
 //主程序
 func main() {
 	var treedata = []int{
-		//		8, 3, 10, 2, 5, 4,
-		8, 3, 9, // 2, 1,
+		//		8, 4, 5,
+		12, 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5, // 14, 13, 10, 16, 6, 3, 8, 17,
+		//8, 3, 15, 18, 17,
+		//		8, 9, 10,
 		//		8, 3, 9, 2, 5, 10, 4,
-		//9, 10,
-		//9, 1, 5, 8, 3, 7, 6, 0, 2, 4,
+		//		9, 10,
+		//		9, 1, 5, 8, 3, 7, 6, 0, 2, 4,
 		//		10, 16, 9, 18, 13, 14,
 		//		10, 16, 9, 18, 13, 11,
 		//		15, 16, 10, 9, 13, 14,
@@ -223,12 +247,12 @@ func main() {
 	}
 	//5, 10, 13, 8, 4, 2, 3, 9,
 	var mytree = Tree{
-		Root:      nil,
-		VisitType: 1,
-		Height:    0,
+		Root: nil,
+		//		VisitType: 1,
+		//		Height:    0,
 	}
 	for _, value := range treedata { //建立数
-		mytree.Root, _ = mytree.CreateRBTree(mytree.Root, value)
+		mytree.CreateRBTree(value)
 	}
 	//mytree.Root = mytree.RotateTree(mytree.Root, TR_LEFT)
 	//深度遍历找树高
@@ -244,5 +268,10 @@ func main() {
 //输出函数
 func print(n *Node) {
 	fmt.Print(n.Value, " ")
-	fmt.Print("[", n.Color, "] ")
+	if n.Color == RED {
+		fmt.Print("[R] ")
+	} else {
+		fmt.Print("[B] ")
+	}
+
 }
