@@ -54,26 +54,11 @@ int main ()
     insertRB(&tree, 8);
     insertRB(&tree, 4);
     */
-    p=    insertRB(&tree, 26);
-    insertRB(&tree, 17);
-    insertRB(&tree, 41);
-    insertRB(&tree, 14);
-    insertRB(&tree, 21);
-    insertRB(&tree, 30);
-    insertRB(&tree, 47);
-    insertRB(&tree, 10);
-    insertRB(&tree, 16);
-    insertRB(&tree, 19);
-    insertRB(&tree, 23);
-    insertRB(&tree, 28);
-    insertRB(&tree, 38);
-    insertRB(&tree, 7);
-    insertRB(&tree, 12);
-    insertRB(&tree, 15);
-    insertRB(&tree, 20);
-    insertRB(&tree, 3);
-    insertRB(&tree, 35);
-    insertRB(&tree, 39);
+    int datax[]={ 1, 9, 2, 0, 11, 7, 19, 4, 15, 18, 5};
+    p=    insertRB(&tree, 12);
+    for(int i=0;i<11;i++){
+        insertRB(&tree, datax[i]);
+    }
      
 
     srand(time(NULL));
@@ -96,12 +81,12 @@ int main ()
     puts("");
     printf("根是%d \n",tree.root->data);
     
-    printf("删除%d后：",p->data);
-    deleteRB(&tree, p);
+    // printf("删除%d后：",p->data);
+    // deleteRB(&tree, p);
     
-    inOrderWalk(&tree,tree.root);
-    puts("");
-    printf("根是%d \n",tree.root->data);
+    // inOrderWalk(&tree,tree.root);
+    // puts("");
+    // printf("根是%d \n",tree.root->data);
     return 0;
 }
 PRBTNode insertRB (PRBTree tree, ElemType d)
