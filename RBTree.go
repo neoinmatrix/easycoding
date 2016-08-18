@@ -211,13 +211,13 @@ func (t *Tree) RotateTree(node *Node, towards int) {
 
 //删除红黑树
 func (t *Tree) DeleteNode(data int) {
-	if data == t.Root.Value {
-		t.Root = nil
+	if t.Root == nil {
 		return
 	}
+	//找到需要删除的点
 	remove := t.Root
 	for remove.Value != data {
-		if remove.Value < data {
+		if remove.Value > data {
 			remove = remove.Left
 		} else {
 			remove = remove.Right
@@ -226,13 +226,77 @@ func (t *Tree) DeleteNode(data int) {
 			return
 		}
 	}
-	//找到删除点
-	//找到真正删除点
+	//查找前驱或者后继
+	var removenode *Node
+	if remove.Left != nil { //前驱
+		removenode = remove.Left
+		for removenode.Right != nil {
+			removenode = removenode.Right
+		}
+		remove.Value = removenode.Value
+	} else if remove.Right != nil { //后继
+		removenode = remove.Right
+		for removenode.Left != nil {
+			removenode = removenode.Left
+		}
+		remove.Value = removenode.Value
+	} else {
+		removenode = remove
+	}
+	if removenode.Parent == nil {
+		t.Root = nil
+		return
+	}
+	// 删除需要删除的点
+	if removenode.Parent.Left == removenode {
+		removenode.Parent.Left = removenode.Left
+		if removenode.Left != nil {
+			removenode.Left.Parent = removenode.Parent
+		}
+	} else {
+		removenode.Parent.Right = removenode.Right
+		if removenode.Left != nil {
+			removenode.Right.Parent = removenode.Parent
+		}
+	}
+	//调整树
+	if removenode.Color == RED { //红色删除无碍
+		return
+	}
+	t.FixTreeDelete(removenode)
+}
 
-	if remove.Color == RED {
-
+//修正红黑树
+func (t *Tree) FixTreeDelete(removenode *Node) {
+	//新结点为红色 改为黑色 补充原来黑结点
+	if removenode.Parent.Left == removenode.Left {
+		if removenode.Left.Color == RED {
+			removenode.Left.Color = BLACK
+			return
+		}
+	} else {
+		if removenode.Right.Color == RED {
+			removenode.Right.Color = BLACK
+			return
+		}
 	}
 
+	if removenode.Parent.Left == removenode.Left { //左支 黑色结点一定存在兄弟结点
+		uncle := removenode.Parent.Right
+		if uncle.Parent.Color == BLACK && uncle.Color == BLACK &&
+			(uncle.Left == nil || uncle.Left.Color == BLACK) &&
+			(uncle.Right == nil || uncle.Right.Color == BLACK) {
+			uncle.Color = RED
+			return
+		}
+		if removenode.Parent.Right.Color == RED { // 叔父节点为红色 周围全是黑色
+			removenode.Parent.Color = RED
+			removenode.Parent.Right.Color = BLACK
+			t.RotateTree(removenode.Parent, TR_LEFT)
+		}
+	} else { //右支
+
+	}
 }
 
 //主程序
@@ -258,6 +322,8 @@ func main() {
 	//	mytree.DFS(mytree.Root, howdepth)
 	//	fmt.Println(depth)
 	//广度遍历整棵树
+	mytree.BFS(mytree.Root, print)
+	mytree.DeleteNode(9)
 	mytree.BFS(mytree.Root, print)
 	//	mytree.Root, _ = mytree.DeleteNode(mytree.Root, 2)
 	//	mytree.BFS(mytree.Root, print)
