@@ -281,21 +281,85 @@ func (t *Tree) FixTreeDelete(removenode *Node) {
 		}
 	}
 
-	if removenode.Parent.Left == removenode.Left { //左支 黑色结点一定存在兄弟结点
-		uncle := removenode.Parent.Right
-		if uncle.Parent.Color == BLACK && uncle.Color == BLACK &&
-			(uncle.Left == nil || uncle.Left.Color == BLACK) &&
-			(uncle.Right == nil || uncle.Right.Color == BLACK) {
-			uncle.Color = RED
-			return
-		}
-		if removenode.Parent.Right.Color == RED { // 叔父节点为红色 周围全是黑色
-			removenode.Parent.Color = RED
-			removenode.Parent.Right.Color = BLACK
-			t.RotateTree(removenode.Parent, TR_LEFT)
-		}
-	} else { //右支
+	for removenode.Color == BLACK && removenode.Parent != nil {
+		if removenode.Parent.Left == removenode.Left { //左支 黑色结点一定存在兄弟结点
+			uncle := removenode.Parent.Right
+			if uncle.Parent.Color == BLACK && uncle.Color == BLACK &&
+				(uncle.Left == nil || uncle.Left.Color == BLACK) &&
+				(uncle.Right == nil || uncle.Right.Color == BLACK) { //周围结点全黑色
+				uncle.Color = RED
+				return
+			}
 
+			if uncle.Parent.Color == RED && uncle.Color == BLACK &&
+				(uncle.Left == nil || uncle.Left.Color == BLACK) &&
+				(uncle.Right == nil || uncle.Right.Color == BLACK) { //周围结点黑色 父红
+				uncle.Color = RED
+				uncle.Parent.Color = BLACK
+				return
+			}
+
+			if uncle.Color == BLACK && uncle.Right != nil && uncle.Right.Color == RED { //周围结点黑色 堂兄右红
+				tmpcolor := uncle.Color
+				uncle.Color = uncle.Parent.Color
+				uncle.Parent.Color = tmpcolor
+				t.RotateTree(uncle.Parent, TR_LEFT)
+				uncle.Right.Color = BLACK
+				return
+			}
+
+			if uncle.Color == BLACK && uncle.Left != nil && uncle.Left.Color == RED { //周围结点黑色 堂兄右红
+				t.RotateTree(uncle, TR_RIGHT)
+				//uncle = uncle.Parent
+				continue
+			}
+
+			if uncle.Color == RED { // 叔父节点为红色 周围全是黑色
+				removenode.Parent.Color = RED
+				removenode.Parent.Right.Color = BLACK
+				t.RotateTree(removenode.Parent, TR_LEFT)
+				continue
+			}
+
+		} else { //右支
+			uncle := removenode.Parent.Left
+			if uncle.Parent.Color == BLACK && uncle.Color == BLACK &&
+				(uncle.Left == nil || uncle.Left.Color == BLACK) &&
+				(uncle.Right == nil || uncle.Right.Color == BLACK) { //周围结点全黑色
+				uncle.Color = RED
+				return
+			}
+
+			if uncle.Parent.Color == RED && uncle.Color == BLACK &&
+				(uncle.Left == nil || uncle.Left.Color == BLACK) &&
+				(uncle.Right == nil || uncle.Right.Color == BLACK) { //周围结点黑色 父红
+				uncle.Color = RED
+				uncle.Parent.Color = BLACK
+				return
+			}
+
+			if uncle.Color == BLACK && uncle.Left != nil && uncle.Left.Color == RED { //周围结点黑色 堂兄右红
+				tmpcolor := uncle.Color
+				uncle.Color = uncle.Parent.Color
+				uncle.Parent.Color = tmpcolor
+				t.RotateTree(uncle.Parent, TR_RIGHT)
+				uncle.Left.Color = BLACK
+				return
+			}
+
+			if uncle.Color == BLACK && uncle.Right != nil && uncle.Right.Color == RED { //周围结点黑色 堂兄右红
+				t.RotateTree(uncle, TR_LEFT)
+				//uncle = uncle.Parent
+				continue
+			}
+
+			if uncle.Color == RED { // 叔父节点为红色 周围全是黑色
+				removenode.Parent.Color = RED
+				removenode.Parent.Left.Color = BLACK
+				t.RotateTree(removenode.Parent, TR_LEFT)
+				continue
+			}
+		}
 	}
 }
 
@@ -323,7 +387,7 @@ func main() {
 	//	fmt.Println(depth)
 	//广度遍历整棵树
 	mytree.BFS(mytree.Root, print)
-	mytree.DeleteNode(9)
+	mytree.DeleteNode(2)
 	mytree.BFS(mytree.Root, print)
 	//	mytree.Root, _ = mytree.DeleteNode(mytree.Root, 2)
 	//	mytree.BFS(mytree.Root, print)
