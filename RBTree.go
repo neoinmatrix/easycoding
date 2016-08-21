@@ -270,12 +270,12 @@ func (t *Tree) DeleteNode(data int) {
 func (t *Tree) FixTreeDelete(removenode *Node) {
 	//新结点为红色 改为黑色 补充原来黑结点
 	if removenode.Parent.Left == removenode.Left {
-		if removenode.Left.Color == RED {
+		if removenode.Left != nil && removenode.Left.Color == RED {
 			removenode.Left.Color = BLACK
 			return
 		}
 	} else {
-		if removenode.Right.Color == RED {
+		if removenode.Right != nil && removenode.Right.Color == RED {
 			removenode.Right.Color = BLACK
 			return
 		}
@@ -387,7 +387,7 @@ func main() {
 	//	fmt.Println(depth)
 	//广度遍历整棵树
 	mytree.BFS(mytree.Root, print)
-	mytree.DeleteNode(2)
+	mytree.DeleteNode(18)
 	mytree.BFS(mytree.Root, print)
 	//	mytree.Root, _ = mytree.DeleteNode(mytree.Root, 2)
 	//	mytree.BFS(mytree.Root, print)
